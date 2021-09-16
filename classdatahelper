@@ -1,0 +1,109 @@
+import 'dart:async';
+
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+
+import 'artistes.dart';
+import 'event.dart';
+
+class DatabaseHelper {
+
+static final DatabaseHelper _instance = new DatabaseHelper.internal();
+
+factory DatabaseHelper() =&gt; _instance;
+
+final String tableArtiste = 'artisteTable';
+final String columnArtisteId = 'id';
+final String columnArtisteTitle = 'title';
+final String columnArtisteImage = 'image';
+
+static Database _db;
+
+DatabaseHelper.internal();
+
+Future&lt;Database&gt; get db async {
+if (_db != null) {
+return _db;
+}
+_db = await initDb();
+
+return _db;
+}
+
+initDb() async {
+String databasesPath = await getDatabasesPath();
+String path = join(databasesPath, 'festival.db');
+
+var db = await openDatabase(path, version: 1, onCreate: _onCreate);
+return db;
+}
+
+void _onCreate(Database db, int newVersion) async {
+await db.execute('CREATE TABLE $tableArtiste($columnArtisteId INTEGER PRIMARY KEY, $columnArtisteTitle TEXT, $columnArtisteImage TEXT)');
+}
+
+/*
+void _onDelete() async {
+String databasesPath = await getDatabasesPath();
+String path = join(databasesPath, 'festival.db');
+await deleteDatabase(path); // just for testing
+}
+*/
+
+Future close() async {
+var dbClient = await db;
+return dbClient.close();
+}
+
+// ARTISTES //
+
+Future&lt;int&gt; saveArtiste(Artiste artiste) async {
+var dbClient = await db;
+var result = await dbClient.insert(tableArtiste, artiste.toMap());
+// var result = await dbClient.rawInsert('INSERT INTO $tabletableArtiste (columnArtisteTitle, columnArtisteImage) VALUES (\'${artiste.title}\', \'${artiste.image}\')');
+
+return result;
+}
+
+Future&lt;List&gt; getAllArtistes() async {
+var dbClient = await db;
+var result = await dbClient.query(tableArtiste, columns: [columnArtisteId, columnArtisteTitle, columnArtisteImage]);
+// var result = await dbClient.rawQuery('SELECT * FROM tableArtiste');
+
+return result.toList();
+}
+
+Future&lt;int&gt; getCount() async {
+var dbClient = await db;
+return Sqflite.firstIntValue(await dbClient.rawQuery('SELECT COUNT(*) FROM $tableArtiste'));
+}
+
+Future&lt;Artiste&gt; getArtiste(int id) async {
+var dbClient = await db;
+List&lt;Map&gt; result = await dbClient.query(tableArtiste,
+columns: [columnArtisteId, columnArtisteTitle, columnArtisteImage],
+where: '$columnArtisteId = ?',
+whereArgs: [id]);
+// var result = await dbClient.rawQuery('SELECT * FROM $tableArtiste WHERE $columnArtisteId = $id');
+
+if (result.length &gt; 0) {
+return new Artiste.fromMap(result.first);
+}
+
+return null;
+}
+
+Future&lt;int&gt; deleteArtiste(int id) async {
+var dbClient = await db;
+return await dbClient.delete(tableArtiste, where: '$columnArtisteId = ?', whereArgs: [id]);
+// return await dbClient.rawDelete('DELETE FROM $tableArtiste WHERE $columnArtisteId = $id');
+}
+
+Future&lt;int&gt; updateArtiste(Artiste artiste) async {
+var dbClient = await db;
+return await dbClient.update(tableArtiste, artiste.toMap(), where: "$columnArtisteId = ?", whereArgs: [artiste.id]);
+// return await dbClient.rawUpdate(
+// 'UPDATE $tableArtiste SET $columnArtisteTitle = \'${artiste.title}\', $columnArtisteImage = \'${artiste.image}\' WHERE $columnArtisteId = ${artiste.id}');
+}
+
+}

@@ -1,0 +1,86 @@
+import 'package:flutter/material.dart';
+
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+
+void main() =&gt; runApp(MaterialApp(home: MyApp()));
+
+class MyApp extends StatelessWidget {
+@override
+Widget build(BuildContext context) {
+return new MaterialApp(
+title: "hmwkapp",
+debugShowCheckedModeBanner: false,
+home: new MyHomePage(),
+);
+}
+}
+
+class MyHomePage extends StatefulWidget {
+@override
+_MyHomePageState createState() =&gt; new _MyHomePageState();
+}
+
+class _MyHomePageState extends State&lt;MyHomePage&gt; {
+
+int countNb = 0;
+Database database = null;
+
+@override
+void initState(){
+super.initState();
+_openCreateDatabase();
+}
+
+Future&lt;void&gt; _openCreateDatabase() async {
+
+var databasesPath = await getDatabasesPath();
+String path = join(databasesPath, 'festival.db');
+
+database = await openDatabase(path, version: 1,
+onCreate: (Database db, int version) async {
+await db.execute('CREATE TABLE Artiste (id INTEGER PRIMARY KEY, name TEXT)');
+});
+}
+
+_addArtisteDatabase() async {
+await database.transaction((txn) async {
+await txn.rawInsert('INSERT INTO Artiste(name) VALUES("Alborosie")');
+});
+}
+
+_getArtisteDatabase() async {
+List&lt;Map&gt; list = await database.rawQuery('SELECT * FROM Artiste');
+setState(() {
+countNb = list.length;
+});
+}
+
+@override
+Widget build(BuildContext context) {
+return new Scaffold(
+appBar: new AppBar(
+title: const Text('hmwkapp'),
+),
+body: new Center(
+child: new Column(
+children: &lt;Widget&gt;[
+new IconButton(
+icon: Icon(Icons.add),
+onPressed: () {
+_addArtisteDatabase();
+},
+),
+new IconButton(
+icon: Icon(Icons.remove_red_eye),
+onPressed: () {
+_getArtisteDatabase();
+},
+),
+new Text("nb entrer dans la base de donnée : " + countNb.toString())
+],
+)
+)
+);
+}
+}

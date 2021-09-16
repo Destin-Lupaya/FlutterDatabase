@@ -1,0 +1,46 @@
+import 'artistes.dart';
+import 'database_helper.dart';
+List artistesList;
+var db;
+
+int count = 0;
+
+@override
+void initState(){
+super.initState();
+
+db = new DatabaseHelper();
+}
+
+@protected
+void dispose() async{
+await db.close();
+}
+
+_addArtiste() async{
+await db.saveArtiste(new Artiste("Alborosie", "https://musikplease.com/wp-content/uploads/sites/17/2016/08/Alborosie_Freedom_Fyah.jpg"));
+}
+
+_updateArtiste(Artiste artiste) async{
+await db.updateArtiste(artiste);
+}
+
+_deleteArtiste(int idArtiste) async{
+await db.deleteArtiste(idArtiste);
+}
+
+_getAllArtistes() async{
+artistesList = await db.getAllArsites();
+}
+
+_getArtistes(int idArtiste) async{
+Artiste artiste = await db.getNote(idArtiste);
+}
+
+_getCountArtistes() async{
+int countTemp = await db.getCount();
+setState(() {
+count = countTemp;
+});
+
+}

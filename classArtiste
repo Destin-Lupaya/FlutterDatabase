@@ -1,0 +1,38 @@
+class Artiste {
+
+int _id;
+String _image;
+String _title;
+
+Artiste(String image, String title) {
+this._image = image;
+this._title = title;
+}
+
+Artiste.map(dynamic obj) {
+this._id = obj['id'];
+this._image = obj['image'];
+this._title = obj['title'];
+}
+
+int get id =&gt; _id;
+String get title =&gt; _title;
+String get image =&gt; _image;
+
+Map&lt;String, dynamic&gt; toMap() {
+var map = new Map&lt;String, dynamic&gt;();
+if (_id != null) {
+map['id'] = _id;
+}
+map['title'] = _title;
+map['image'] = _image;
+
+return map;
+}
+
+Artiste.fromMap(Map&lt;String, dynamic&gt; map) {
+this._id = map['id'];
+this._title = map['title'];
+this._image = map['image'];
+}
+}
